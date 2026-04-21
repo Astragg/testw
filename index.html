@@ -2,30 +2,53 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>D&D Generator</title>
+<title>D&D DM Tool</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<h2>D&D Character Generator</h2>
+<header>D&D DM Tool</header>
 
-<label>Name</label>
-<input id="name">
+<div class="tabs">
+  <button onclick="showTab('gen')">Generator</button>
+  <button onclick="showTab('sheet')">Sheet</button>
+  <button onclick="showTab('spells')">Spells</button>
+  <button onclick="showTab('rules')">Rules</button>
+</div>
 
-<label>Class</label>
-<select id="class"></select>
+<!-- GENERATOR -->
+<div id="gen" class="tab active">
+  <label>Name</label>
+  <input id="name">
 
-<label>Level</label>
-<input id="level" type="number" value="1" min="1" max="20">
+  <label>Class</label>
+  <select id="class"></select>
 
-<button onclick="generateCharacter()">Generate</button>
+  <label>Subclass</label>
+  <select id="subclass"></select>
 
-<h3>Character</h3>
-<div id="sheet"></div>
+  <label>Level</label>
+  <input id="level" type="number" value="1" min="1" max="20">
 
-<h3>Spell Search</h3>
-<input id="spellSearch" placeholder="Search spells...">
-<div id="spellList"></div>
+  <button onclick="generateCharacter()">Generate Character</button>
+</div>
+
+<!-- SHEET -->
+<div id="sheet" class="tab"></div>
+
+<!-- SPELLS -->
+<div id="spells" class="tab">
+  <label>Search Spells</label>
+  <input id="spellSearch">
+  <div id="spellList"></div>
+</div>
+
+<!-- RULES -->
+<div id="rules" class="tab">
+  <label>Search Rules</label>
+  <input id="ruleSearch">
+  <div id="ruleList"></div>
+</div>
 
 <script src="script.js"></script>
 </body>
