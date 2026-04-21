@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>D&D DM Tool</title>
+<title>DM Tool</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<header>D&D DM Tool</header>
+<header>DM Tool (SRD Powered)</header>
 
 <div class="tabs">
   <button onclick="showTab('gen')">Generator</button>
@@ -30,7 +30,7 @@
   <label>Level</label>
   <input id="level" type="number" value="1" min="1" max="20">
 
-  <button onclick="generateCharacter()">Generate Character</button>
+  <button onclick="generateCharacter()">Generate</button>
 </div>
 
 <!-- SHEET -->
@@ -41,6 +41,7 @@
   <label>Search Spells</label>
   <input id="spellSearch">
   <div id="spellList"></div>
+  <div id="spellDetails" class="card"></div>
 </div>
 
 <!-- RULES -->
