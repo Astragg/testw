@@ -1,45 +1,20 @@
-body { background: #121212; color: #eee; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-.tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+body { background: #121212; color: #eee; font-family: sans-serif; padding: 20px; }
+.tabs { display: flex; gap: 5px; margin-bottom: 20px; }
 .tab { display: none; }
 .active { display: block; }
 
-button { 
-    background: #333; color: white; border: 1px solid #444; 
-    padding: 10px 15px; cursor: pointer; border-radius: 4px;
-}
+button { padding: 10px; background: #222; color: white; border: 1px solid #444; cursor: pointer; }
+.primary-btn { background: #b71c1c; width: 100%; border: none; font-weight: bold; }
 
-.primary-btn { background: #b71c1c; border: none; width: 100%; font-weight: bold; margin-top: 10px; }
+.card { background: #1e1e1e; border: 1px solid #333; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
 
-.card { 
-    background: #1e1e1e; border-left: 4px solid #b71c1c; 
-    padding: 15px; margin-bottom: 15px; border-radius: 4px; 
-}
+input, select { width: 100%; padding: 10px; margin: 10px 0; background: #000; color: white; border: 1px solid #444; }
 
-input, select { 
-    width: 100%; padding: 10px; margin: 10px 0; 
-    background: #000; color: #fff; border: 1px solid #444; 
-}
+/* The Arrow */
+summary { cursor: pointer; font-weight: bold; list-style: none; position: relative; padding-left: 20px; }
+summary::before { content: '▶'; position: absolute; left: 0; color: #b71c1c; transition: 0.2s; font-size: 0.8rem; }
+details[open] summary::before { transform: rotate(90deg); }
 
-/* Arrow Styling */
-summary { 
-    cursor: pointer; 
-    padding: 5px; 
-    list-style: none; /* Hide default arrow */
-    font-weight: bold;
-}
-
-summary::before {
-    content: '▶  ';
-    color: #b71c1c;
-    display: inline-block;
-    transition: 0.2s;
-}
-
-details[open] summary::before {
-    transform: rotate(90deg);
-}
-
-table th { color: #888; font-size: 0.8rem; text-transform: uppercase; }
-table td { padding: 10px 0; }
-
-.spell-body { padding-top: 10px; color: #bbb; line-height: 1.4; }
+.spell-data { padding-top: 10px; line-height: 1.5; color: #ccc; }
+table { border-collapse: collapse; margin-top: 10px; }
+table th { text-align: left; color: #b71c1c; }
