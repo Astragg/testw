@@ -65,7 +65,7 @@ function updateSubclasses() {
   sel.innerHTML = "";
 
   SUBCLASSES
-    .filter(s => s.class.name === cls)
+    .filter(s => s.class?.name?.toLowerCase() === cls.toLowerCase())
     .forEach(s => {
       let o = document.createElement("option");
       o.text = s.name;
@@ -120,12 +120,15 @@ async function loadSpell(index) {
   let data = await res.json();
 
   document.getElementById("spellDetails").innerHTML = `
-    <b>${data.name}</b><br>
-    Level: ${data.level}<br>
-    Range: ${data.range}<br>
-    Duration: ${data.duration}<br>
-    <br>
-    ${data.desc?.join("<br>") || ""}
+    <div class="card">
+      <b>${data.name}</b><br>
+      Level: ${data.level}<br>
+      School: ${data.school?.name || "Unknown"}<br>
+      Range: ${data.range}<br>
+      Casting Time: ${data.casting_time}<br>
+      Duration: ${data.duration}<br><br>
+      ${data.desc?.join("<br>") || ""}
+    </div>
   `;
 }
 
@@ -139,7 +142,8 @@ function renderRules() {
     .filter(r => r.name.toLowerCase().includes(q))
     .map(r => `
       <div class="card">
-        <b>${r.name}</b>
+        <b>${r.name}</b><br>
+        ${r.desc?.join(" ") || ""}
       </div>
     `)
     .join("");
