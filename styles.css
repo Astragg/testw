@@ -1,0 +1,131 @@
+:root {
+    --parchment: #f4e4bc;
+    --dark-ink: #2c241e;
+    --gold: #b8860b;
+    --crimson: #800000;
+    --shadow: rgba(0, 0, 0, 0.3);
+}
+
+body {
+    background-color: #1a1a1a;
+    color: var(--dark-ink);
+    font-family: 'Almendra', serif;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    margin: 0;
+}
+
+.container {
+    background-color: var(--parchment);
+    max-width: 800px;
+    width: 100%;
+    padding: 40px;
+    border-radius: 5px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 2px solid var(--gold);
+    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-family: 'Cinzel', serif;
+    color: var(--crimson);
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--dark-ink);
+    background: rgba(255, 255, 255, 0.5);
+    font-family: 'Almendra', serif;
+    font-size: 1rem;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    background: var(--crimson);
+    color: white;
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #a00000;
+}
+
+.divider {
+    border: 0;
+    height: 2px;
+    background: var(--gold);
+    margin: 40px 0;
+}
+
+.loot-display {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.currency-box {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.coin {
+    padding: 10px;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    background: rgba(184, 134, 11, 0.1);
+}
+
+.magic-item {
+    border-left: 4px solid var(--crimson);
+    padding-left: 15px;
+    margin-bottom: 15px;
+}
+
+.rarity-label {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--gold);
+}
+
+.hidden { display: none; }
