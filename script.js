@@ -1,59 +1,40 @@
-/* =========================
-   GLOBAL STATE
-========================= */
 let CLASSES = [];
 let SPELLS = [];
 let RULES = [];
-let currentStats = rollStats();
+let currentStats = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
 
-/* =========================
-   INITIALIZATION
-========================= */
 async function loadData() {
     try {
-        console.log("Fetching SRD Data...");
         const [cRes, spRes, rRes] = await Promise.all([
             fetch("https://www.dnd5eapi.co/api/classes"),
             fetch("https://www.dnd5eapi.co/api/spells"),
             fetch("https://www.dnd5eapi.co/api/conditions")
         ]);
 
-        const cData = await cRes.json();
-        const spData = await spRes.json();
-        const rData = await rRes.json();
-
-        CLASSES = cData.results;
-        SPELLS = spData.results;
-        RULES = rData.results;
+        CLASSES = (await cRes.json()).results;
+        SPELLS = (await spRes.json()).results;
+        RULES = (await rRes.json()).results;
 
         populateClasses();
         renderSpells();
         renderRules();
-        rerollStats(); // Initial stat roll
-        
-        console.log("Ready!");
     } catch (err) {
         console.error("API Error:", err);
     }
 }
 
-/* =========================
-   UI & NAVIGATION
-========================= */
 function showTab(id) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 }
 
-/* =========================
-   CLASS & SUBCLASS LOGIC
-========================= */
+/* --- CLASS LOGIC --- */
 function populateClasses() {
     const sel = document.getElementById("class");
     sel.innerHTML = "";
     CLASSES.forEach(c => {
         const o = document.createElement("option");
-        o.value = c.index; // 'wizard', 'fighter', etc.
+        o.value = c.index;
         o.text = c.name;
         sel.add(o);
     });
@@ -63,119 +44,84 @@ function populateClasses() {
 document.getElementById("class").addEventListener("change", updateSubclasses);
 
 async function updateSubclasses() {
-    const classIndex = document.getElementById("class").value;
+    const cls = document.getElementById("class").value;
     const sel = document.getElementById("subclass");
     sel.innerHTML = "<option>Loading...</option>";
-
-    try {
-        const res = await fetch(`https://www.dnd5eapi.co/api/classes/${classIndex}/subclasses`);
-        const data = await res.json();
-        sel.innerHTML = "";
-        
-        if (data.results.length === 0) {
-            sel.innerHTML = "<option value='none'>No Subclasses in SRD</option>";
-        } else {
-            data.results.forEach(s => {
-                const o = document.createElement("option");
-                o.value = s.index;
-                o.text = s.name;
-                sel.add(o);
-            });
-        }
-    } catch (e) {
-        sel.innerHTML = "<option>Error loading subclasses</option>";
-    }
-}
-
-/* =========================
-   CHARACTER MECHANICS
-========================= */
-function rollStats() {
-    const roll4d6kh3 = () => {
-        let rolls = Array.from({length: 4}, () => Math.floor(Math.random() * 6) + 1);
-        return rolls.sort().slice(1).reduce((a, b) => a + b, 0);
-    };
-    return {
-        STR: roll4d6kh3(), DEX: roll4d6kh3(), CON: roll4d6kh3(),
-        INT: roll4d6kh3(), WIS: roll4d6kh3(), CHA: roll4d6kh3()
-    };
-}
-
-function rerollStats() {
-    currentStats = rollStats();
-    document.getElementById("statPreview").innerHTML = 
-        Object.entries(currentStats).map(([k, v]) => `<b>${k}:</b> ${v}`).join(" | ");
-}
-
-const getMod = (score) => Math.floor((score - 10) / 2);
-
-function generateCharacter() {
-    const name = document.getElementById("name").value || "Nameless Hero";
-    const classEl = document.getElementById("class");
-    const subEl = document.getElementById("subclass");
     
-    const className = classEl.options[classEl.selectedIndex].text;
-    const subName = subEl.options[subEl.selectedIndex]?.text || "None";
-    const lvl = +document.getElementById("level").value;
+    const res = await fetch(`https://www.dnd5eapi.co/api/classes/${cls}/subclasses`);
+    const data = await res.json();
+    
+    sel.innerHTML = "";
+    data.results.forEach(s => {
+        const o = document.createElement("option");
+        o.text = s.name;
+        sel.add(o);
+    });
+}
 
-    const hp = 10 + (lvl * 5) + (lvl * getMod(currentStats.CON));
+/* --- GENERATION --- */
+function generateCharacter() {
+    const name = document.getElementById("name").value || "Hero";
+    const cls = document.getElementById("class").options[document.getElementById("class").selectedIndex].text;
+    const sub = document.getElementById("subclass").value;
+    const lvl = document.getElementById("level").value;
 
+    // Use sheetOutput as the target
     document.getElementById("sheetOutput").innerHTML = `
         <div class="card">
             <h2>${name}</h2>
-            <p>${className} (${subName}) | Level ${lvl}</p>
-            <hr>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><b>HP:</b> ${hp}</div>
-                <div><b>AC:</b> ${10 + getMod(currentStats.DEX)}</div>
-            </div>
+            <p>Level ${lvl} ${cls}</p>
+            <p><b>Subclass:</b> ${sub}</p>
+            <p><b>HP:</b> ${10 + (lvl * 5)}</p>
         </div>
-        <div class="card">
-            <h3>Ability Scores</h3>
-            ${Object.entries(currentStats).map(([k, v]) => `
-                <div><b>${k}:</b> ${v} (Modifier: ${getMod(v) >= 0 ? '+' : ''}${getMod(v)})</div>
-            `).join("")}
-        </div>
-        <button class="primary-btn" onclick="window.print()">Print Sheet</button>
     `;
     showTab("sheet");
 }
 
-/* =========================
-   SPELLS & RULES
-========================= */
+/* --- SPELLS WITH DROPDOWN --- */
 document.getElementById("spellSearch").addEventListener("input", renderSpells);
 
 function renderSpells() {
-    const query = document.getElementById("spellSearch").value.toLowerCase();
+    const q = document.getElementById("spellSearch").value.toLowerCase();
     const list = document.getElementById("spellList");
+    
     list.innerHTML = SPELLS
-        .filter(s => s.name.toLowerCase().includes(query))
-        .slice(0, 30)
-        .map(s => `<div class="card" style="cursor:pointer" onclick="loadSpell('${s.index}')">${s.name}</div>`)
-        .join("");
+        .filter(s => s.name.toLowerCase().includes(q))
+        .slice(0, 30) // Performance limit
+        .map(s => `
+            <details class="card" onclick="if(!this.dataset.loaded) fetchDetails(this, '${s.index}')">
+                <summary><b>${s.name}</b></summary>
+                <div class="details-content">Loading spell secrets...</div>
+            </details>
+        `).join("");
 }
 
-async function loadSpell(index) {
+async function fetchDetails(el, index) {
+    el.dataset.loaded = "true";
     const res = await fetch(`https://www.dnd5eapi.co/api/spells/${index}`);
     const d = await res.json();
-    document.getElementById("spellDetails").innerHTML = `
-        <h3>${d.name}</h3>
+    el.querySelector(".details-content").innerHTML = `
+        <hr>
         <p><i>Level ${d.level} ${d.school.name}</i></p>
-        <p><b>Range:</b> ${d.range} | <b>Casting:</b> ${d.casting_time}</p>
-        <p>${d.desc.join("<br><br>")}</p>
+        <p>${d.desc ? d.desc.join("<br><br>") : "No description."}</p>
     `;
 }
 
+/* --- RULES --- */
 document.getElementById("ruleSearch").addEventListener("input", renderRules);
 
 function renderRules() {
-    const query = document.getElementById("ruleSearch").value.toLowerCase();
-    document.getElementById("ruleList").innerHTML = RULES
-        .filter(r => r.name.toLowerCase().includes(query))
-        .map(r => `<div class="card"><b>${r.name}</b><br><small>${r.desc.join(" ")}</small></div>`)
-        .join("");
+    const q = document.getElementById("ruleSearch").value.toLowerCase();
+    const list = document.getElementById("ruleList");
+    
+    list.innerHTML = RULES
+        .filter(r => r.name.toLowerCase().includes(q))
+        .map(r => `
+            <div class="card">
+                <b>${r.name}</b><br>
+                <small>${r.desc ? r.desc.join(" ") : "No extra rules info."}</small>
+            </div>
+        `).join("");
 }
 
-// Kickoff
 loadData();
