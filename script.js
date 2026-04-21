@@ -2,11 +2,25 @@ let CLASSES = [];
 let SPELLS = [];
 let RULES = [];
 
-// 1. SAFE LOADING
+// Base D&D Class Data for generation logic
+const CLASS_DATA = {
+    "Barbarian": { hd: 12, saves: ["STR", "CON"] },
+    "Bard": { hd: 8, saves: ["DEX", "CHA"] },
+    "Cleric": { hd: 8, saves: ["WIS", "CHA"] },
+    "Druid": { hd: 8, saves: ["INT", "WIS"] },
+    "Fighter": { hd: 10, saves: ["STR", "CON"] },
+    "Monk": { hd: 8, saves: ["STR", "DEX"] },
+    "Paladin": { hd: 10, saves: ["WIS", "CHA"] },
+    "Ranger": { hd: 10, saves: ["STR", "DEX"] },
+    "Rogue": { hd: 8, saves: ["DEX", "INT"] },
+    "Sorcerer": { hd: 6, saves: ["CON", "CHA"] },
+    "Warlock": { hd: 8, saves: ["WIS", "CHA"] },
+    "Wizard": { hd: 6, saves: ["INT", "WIS"] }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     loadData();
     
-    // Attach listeners safely after DOM is ready
     const sSearch = document.getElementById("spellSearch");
     const rSearch = document.getElementById("ruleSearch");
     
@@ -51,66 +65,97 @@ function populateClasses() {
     });
 }
 
-// 2. THE CHARACTER SHEET (WITH COMBAT BLOCKS)
+// Dice Roller for Stats (4d6 drop lowest)
+function rollStat() {
+    let rolls = Array.from({length: 4}, () => Math.floor(Math.random() * 6) + 1);
+    rolls.sort((a, b) => b - a); // Sort highest to lowest
+    return rolls[0] + rolls[1] + rolls[2]; // Sum top 3
+}
+
+function getMod(score) {
+    return Math.floor((score - 10) / 2);
+}
+
+function formatMod(mod) {
+    return mod >= 0 ? `+${mod}` : `${mod}`;
+}
+
+// THE 5E STANDARD CHARACTER SHEET
 function generateCharacter() {
-    const name = document.getElementById("charName").value || "Hero";
-    const classIndex = document.getElementById("classSelect").value;
+    const name = document.getElementById("charName").value || "Nameless Hero";
     const className = document.getElementById("classSelect").options[document.getElementById("classSelect").selectedIndex].text;
     const lvl = parseInt(document.getElementById("levelInput").value);
 
-    // Combat Logic
-    let weapon = (className === "Wizard" || className === "Sorcerer") ? "Quarterstaff" : "Longsword";
-    let atkMod = (className === "Fighter" || className === "Barbarian") ? "+5" : "+3";
-    let dmg = (className === "Fighter") ? "1d10 + 3" : "1d6 + 1";
-    
-    // Fighter/Martial scaling
-    let actions = "1 Action";
-    if (className === "Fighter" || className === "Barbarian" || className === "Paladin") {
-        if (lvl >= 5) actions = "2 Actions (Extra Attack)";
-    }
-    let special = (className === "Fighter" && lvl >= 2) ? "<li><b>Action Surge:</b> Take one extra action (1/Short Rest)</li>" : "";
+    // Roll Stats
+    const stats = {
+        STR: rollStat(), DEX: rollStat(), CON: rollStat(),
+        INT: rollStat(), WIS: rollStat(), CHA: rollStat()
+    };
+
+    // Calculate D&D Mechanics
+    const classInfo = CLASS_DATA[className] || { hd: 8, saves: [] };
+    const pb = Math.ceil(lvl / 4) + 1; // Proficiency Bonus scales with level
+    const hp = classInfo.hd + getMod(stats.CON) + ((lvl - 1) * (Math.floor(classInfo.hd / 2) + 1 + getMod(stats.CON)));
+    const ac = 10 + getMod(stats.DEX);
+    const initiative = formatMod(getMod(stats.DEX));
+
+    // Determine basic attack stats
+    let weaponMod = formatMod(Math.max(getMod(stats.STR), getMod(stats.DEX)) + pb);
 
     document.getElementById("sheetOutput").innerHTML = `
-        <div class="card">
-            <h2 style="margin:0; color:#b71c1c;">${name}</h2>
-            <p>Level ${lvl} ${className}</p>
+        <div class="sheet-header">
+            <h2>${name}</h2>
+            <div class="header-details">
+                <span><b>Class:</b> ${className}</span>
+                <span><b>Level:</b> ${lvl}</span>
+                <span><b>Proficiency Bonus:</b> +${pb}</span>
+            </div>
         </div>
 
-        <div class="card">
-            <h3 style="border-bottom:1px solid #444; padding-bottom:5px;">Attacks</h3>
-            <table width="100%">
-                <tr style="text-align:left; font-size:0.8rem; color:#888;">
-                    <th>Weapon</th><th>Atk</th><th>Damage</th>
-                </tr>
-                <tr>
-                    <td><b>${weapon}</b></td><td>${atkMod}</td><td>${dmg}</td>
-                </tr>
-                <tr>
-                    <td>Unarmed</td><td>+4</td><td>1 + Str</td>
-                </tr>
-            </table>
-        </div>
+        <div class="sheet-grid">
+            <div class="stat-column">
+                ${Object.entries(stats).map(([stat, score]) => `
+                    <div class="stat-box">
+                        <div class="stat-name">${stat}</div>
+                        <div class="stat-mod">${formatMod(getMod(score))}</div>
+                        <div class="stat-score">${score}</div>
+                    </div>
+                `).join('')}
+            </div>
 
-        <div class="card">
-            <h3>Actions & Features</h3>
-            <ul style="padding-left:18px;">
-                <li><b>Multiattack:</b> ${actions}</li>
-                ${special}
-                <li><b>Bonus Action:</b> Off-hand attack or class feature</li>
-            </ul>
-        </div>
+            <div class="combat-column">
+                <div class="vitals-row">
+                    <div class="vital-box"><b>AC</b><br>${ac}</div>
+                    <div class="vital-box"><b>Initiative</b><br>${initiative}</div>
+                    <div class="vital-box"><b>Speed</b><br>30 ft</div>
+                    <div class="vital-box hp-box"><b>Hit Points</b><br>${hp} / ${hp}<br><small>Hit Dice: ${lvl}d${classInfo.hd}</small></div>
+                </div>
 
-        <div class="card">
-            <h3>Magic (Cantrips)</h3>
-            <p style="margin:0; font-style:italic;">Guidance, Mage Hand, Shocking Grasp</p>
-        </div>
+                <div class="attacks-box">
+                    <h3>Attacks & Spellcasting</h3>
+                    <table width="100%">
+                        <tr><th>Name</th><th>Atk Bonus</th><th>Damage/Type</th></tr>
+                        <tr><td>Primary Weapon</td><td>${weaponMod}</td><td>1d8 ${formatMod(getMod(stats.STR))}</td></tr>
+                        <tr><td>Unarmed Strike</td><td>${formatMod(getMod(stats.STR) + pb)}</td><td>${1 + getMod(stats.STR)} Bludgeoning</td></tr>
+                    </table>
+                </div>
 
-        <button class="primary-btn" onclick="saveCharacterData()">Save JSON</button>
+                <div class="traits-box">
+                    <h3>Features & Traits</h3>
+                    <ul>
+                        <li><b>Saving Throws:</b> ${classInfo.saves.join(', ')}</li>
+                        <li><b>Armor/Weapons:</b> Refer to ${className} class block</li>
+                        ${lvl >= 5 && (className === 'Fighter' || className === 'Barbarian' || className === 'Paladin' || className === 'Ranger' || className === 'Monk') ? '<li><b>Extra Attack:</b> Attack twice when taking the Attack action.</li>' : ''}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <button class="primary-btn" onclick="saveCharacterData()">Save Character JSON</button>
     `;
     showTab("sheet");
 }
 
-// 3. SPELLS WITH CUSTOM ARROWS
+/* --- SPELLS --- */
 function renderSpells() {
     const q = document.getElementById("spellSearch").value.toLowerCase();
     const list = document.getElementById("spellList");
@@ -119,24 +164,14 @@ function renderSpells() {
         .filter(s => s.name.toLowerCase().includes(q))
         .slice(0, 20)
         .map(s => `
-            <details class="card" onclick="if(!this.dataset.loaded) fetchSpell('${s.index}', this)">
+            <details class="card" onclick="if(!this.dataset.loaded) fetchItemData('${s.index}', this, 'spells')">
                 <summary>${s.name}</summary>
-                <div class="spell-data">Loading...</div>
+                <div class="drop-data">Loading...</div>
             </details>
         `).join("");
 }
 
-async function fetchSpell(index, el) {
-    el.dataset.loaded = "true";
-    const res = await fetch(`https://www.dnd5eapi.co/api/spells/${index}`);
-    const d = await res.json();
-    el.querySelector(".spell-data").innerHTML = `
-        <p style="color:#888; font-size:0.9rem;">Level ${d.level} | ${d.school.name}</p>
-        <p>${d.desc ? d.desc.join("<br><br>") : "No info."}</p>
-    `;
-}
-
-// 4. RULES (PATCHED JOIN ERROR)
+/* --- RULES (FIXED DROPDOWN) --- */
 function renderRules() {
     const q = document.getElementById("ruleSearch").value.toLowerCase();
     const list = document.getElementById("ruleList");
@@ -144,11 +179,30 @@ function renderRules() {
     list.innerHTML = RULES
         .filter(r => r.name.toLowerCase().includes(q))
         .map(r => `
-            <div class="card">
-                <b>${r.name}</b><br>
-                <small>${r.desc ? r.desc.join(" ") : "Refer to Player's Handbook."}</small>
-            </div>
+            <details class="card" onclick="if(!this.dataset.loaded) fetchItemData('${r.index}', this, 'conditions')">
+                <summary>${r.name}</summary>
+                <div class="drop-data">Loading...</div>
+            </details>
         `).join("");
+}
+
+// Unified fetch function for both spells and rules
+async function fetchItemData(index, el, category) {
+    el.dataset.loaded = "true";
+    try {
+        const res = await fetch(`https://www.dnd5eapi.co/api/${category}/${index}`);
+        const d = await res.json();
+        
+        let content = "";
+        if (category === "spells") {
+            content = `<p style="color:#888; font-size:0.9rem;">Level ${d.level} | ${d.school.name}</p>`;
+        }
+        content += `<p>${d.desc ? d.desc.join("<br><br>") : "No description available in the SRD API."}</p>`;
+        
+        el.querySelector(".drop-data").innerHTML = content;
+    } catch (err) {
+        el.querySelector(".drop-data").innerHTML = "Error loading data.";
+    }
 }
 
 function saveCharacterData() {
