@@ -1,1 +1,42 @@
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: #e5e7eb;
+}
 
+header {
+  text-align: center;
+  padding: 15px;
+  background: #111827;
+  font-size: 20px;
+}
+
+.tabs {
+  display: flex;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px;
+  background: #1f2937;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.tab {
+  display: none;
+  padding: 15px;
+}
+
+.tab.active {
+  display: block;
+}
+
+.card {
+  background: #1f2937;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+}
