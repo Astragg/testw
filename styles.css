@@ -1,24 +1,63 @@
 body {
-  font-family: Arial;
+  font-family: system-ui;
   background: #0f172a;
   color: #e5e7eb;
-  padding: 20px;
+  margin: 0;
+}
+
+header {
+  padding: 15px;
+  text-align: center;
+  background: #111827;
+  font-size: 20px;
+}
+
+.tabs {
+  display: flex;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px;
+  background: #1f2937;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.tab {
+  display: none;
+  padding: 15px;
+}
+
+.tab.active {
+  display: block;
 }
 
 label {
   display: block;
   margin-top: 10px;
+  color: #9ca3af;
 }
 
 input, select, button {
   width: 100%;
   padding: 8px;
   margin-top: 5px;
+  background: #1f2937;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+
+button {
+  background: #2563eb;
+  cursor: pointer;
 }
 
 .card {
   background: #1f2937;
-  padding: 10px;
+  padding: 12px;
   margin-top: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
 }
