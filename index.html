@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcane Loot Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Almendra:wght@400;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Arcane Loot Generator</h1>
+            <p>Determine the spoils of your encounter</p>
+        </header>
+
+        <section class="generator-form">
+            <div class="input-grid">
+                <div class="form-group">
+                    <label>Party Level</label>
+                    <input type="number" id="partyLevel" min="1" max="20" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Encounter Difficulty</label>
+                    <select id="difficulty">
+                        <option value="1">Easy</option>
+                        <option value="1.5" selected>Medium</option>
+                        <option value="2">Hard</option>
+                        <option value="3">Deadly</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Creature Type</label>
+                    <select id="creatureType">
+                        <option>Humanoid</option>
+                        <option>Beast</option>
+                        <option>Undead</option>
+                        <option>Dragon</option>
+                        <option>Fiend</option>
+                        <option>Construct</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Environment</label>
+                    <select id="environment">
+                        <option>Dungeon</option>
+                        <option>Wilderness</option>
+                        <option>Urban</option>
+                        <option>Ocean</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="includeCoins" checked> Coins</label>
+                <label><input type="checkbox" id="includeMundane" checked> Mundane Items</label>
+                <label><input type="checkbox" id="includeGems" checked> Gems/Art</label>
+                <label><input type="checkbox" id="includeMagic" checked> Magic Items</label>
+            </div>
+
+            <button id="generateBtn">Generate Loot</button>
+        </section>
+
+        <hr class="divider">
+
+        <section id="lootResult" class="loot-display hidden">
+            </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
