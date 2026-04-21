@@ -2,53 +2,133 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Emergency Character Generator</title>
-<link rel="stylesheet" href="styles.css">
+<title>D&D Simple Generator</title>
+<style>
+body { font-family: Arial; background:#0f172a; color:white; padding:20px }
+label { display:block; margin-top:10px }
+select, input, button { width:100%; padding:8px; margin-top:5px }
+.card { background:#1f2937; padding:10px; margin-top:10px }
+</style>
 </head>
 <body>
 
-<header>Emergency Character Generator</header>
+<h2>D&D Character Generator</h2>
 
-<div class="tabs">
-  <button onclick="showTab('gen')">Generator</button>
-  <button onclick="showTab('sheet')">Sheet</button>
-  <button onclick="showTab('spells')">Spells</button>
-  <button onclick="showTab('rules')">Rules</button>
-</div>
+<label>Name</label>
+<input id="name">
 
-<!-- GENERATOR -->
-<div id="gen" class="tab active">
-  <input id="name" placeholder="Name">
-  <select id="race"></select>
-  <select id="class"></select>
-  <input id="level" type="number" min="1" max="20" value="1">
-  <button onclick="generateCharacter()">Generate</button>
-</div>
+<label>Class</label>
+<select id="class"></select>
 
-<!-- SHEET -->
-<div id="sheet" class="tab">
-  <div id="sheetView"></div>
-</div>
+<label>Level</label>
+<input id="level" type="number" value="1" min="1" max="20">
 
-<!-- SPELLS -->
-<div id="spells" class="tab">
-  <input id="spellSearch" placeholder="Search spells...">
-  <div id="spellList"></div>
-</div>
+<button onclick="generate()">Generate Character</button>
 
-<!-- RULES -->
-<div id="rules" class="tab">
-  <input id="ruleSearch" placeholder="Search rules...">
-  <div id="ruleList"></div>
-</div>
+<h3>Character</h3>
+<div id="sheet"></div>
 
-<script src="data/races.js"></script>
-<script src="data/classes.js"></script>
-<script src="data/spells.js"></script>
-<script src="data/rules.js"></script>
-<script src="data/items.js"></script>
-<script src="script.js"></script>
+<h3>Spell Search</h3>
+<input id="search" placeholder="Search spells..." oninput="renderSpells()">
+<div id="spells"></div>
+
+<script>
+let SPELLS = [];
+let CLASSES = [];
+
+// ===== LOAD DATA =====
+async function loadData() {
+  // Try localStorage first
+  if (localStorage.getItem("spells")) {
+    SPELLS = JSON.parse(localStorage.getItem("spells"));
+    CLASSES = JSON.parse(localStorage.getItem("classes"));
+    populateClasses();
+    renderSpells();
+    return;
+  }
+
+  // Fetch classes
+  let classRes = await fetch("https://www.dnd5eapi.co/api/classes");
+  let classData = await classRes.json();
+
+  CLASSES = await Promise.all(
+    classData.results.map(c =>
+      fetch("https://www.dnd5eapi.co" + c.url).then(r => r.json())
+    )
+  );
+
+  // Fetch spells
+  let spellRes = await fetch("https://www.dnd5eapi.co/api/spells");
+  let spellData = await spellRes.json();
+
+  SPELLS = await Promise.all(
+    spellData.results.map(s =>
+      fetch("https://www.dnd5eapi.co" + s.url).then(r => r.json())
+    )
+  );
+
+  // Save locally
+  localStorage.setItem("spells", JSON.stringify(SPELLS));
+  localStorage.setItem("classes", JSON.stringify(CLASSES));
+
+  populateClasses();
+  renderSpells();
+}
+
+// ===== UI =====
+function populateClasses() {
+  let sel = document.getElementById("class");
+  sel.innerHTML = "";
+  CLASSES.forEach(c => {
+    let o = document.createElement("option");
+    o.text = c.name;
+    sel.add(o);
+  });
+}
+
+// ===== GENERATE CHARACTER =====
+function generate() {
+  let name = document.getElementById("name").value || "Hero";
+  let cls = document.getElementById("class").value;
+  let lvl = +document.getElementById("level").value;
+
+  let hp = 10 + lvl * 5;
+
+  let classSpells = SPELLS.filter(s =>
+    s.classes?.some(c => c.name === cls)
+  ).slice(0, 5);
+
+  document.getElementById("sheet").innerHTML = `
+    <div class="card">
+      <b>${name}</b><br>
+      ${cls} Level ${lvl}<br>
+      HP: ${hp}
+    </div>
+    <div class="card">
+      Spells: ${classSpells.map(s => s.name).join(", ")}
+    </div>
+  `;
+}
+
+// ===== SPELL SEARCH =====
+function renderSpells() {
+  let q = document.getElementById("search").value.toLowerCase();
+
+  document.getElementById("spells").innerHTML = SPELLS
+    .filter(s => s.name.toLowerCase().includes(q))
+    .slice(0, 50)
+    .map(s => `
+      <div class="card">
+        <b>${s.name}</b> (Level ${s.level})<br>
+        ${s.desc ? s.desc[0] : ""}
+      </div>
+    `)
+    .join("");
+}
+
+// START
+loadData();
+</script>
 
 </body>
 </html>
