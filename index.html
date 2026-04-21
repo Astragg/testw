@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Emergency Character Generator+</title>
+<title>Emergency Character Generator++</title>
 <style>
 body{font-family:Arial;margin:0;background:#0f172a;color:#e5e7eb}
 header{padding:10px;background:#111827;text-align:center;font-size:20px}
@@ -11,17 +11,20 @@ header{padding:10px;background:#111827;text-align:center;font-size:20px}
 .tabs button{flex:1;padding:10px;background:#1f2937;border:none;color:white;cursor:pointer}
 .tab{display:none;padding:15px}
 .tab.active{display:block}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
 .card{background:#1f2937;padding:10px;border-radius:10px}
 input,select,button{margin:5px;padding:6px}
+.scroll{max-height:400px;overflow:auto}
 </style>
 </head>
 <body>
-<header>Emergency Character Generator+</header>
+<header>Emergency Character Generator++</header>
 
 <div class="tabs">
 <button onclick="showTab('gen')">Generator</button>
 <button onclick="showTab('sheet')">Sheet</button>
+<button onclick="showTab('spells')">Spells</button>
+<button onclick="showTab('rules')">Rules</button>
 <button onclick="showTab('import')">Import</button>
 </div>
 
@@ -40,6 +43,18 @@ input,select,button{margin:5px;padding:6px}
 <button onclick="exportJSON()">Export</button>
 </div>
 
+<div id="spells" class="tab">
+<h3>Spellbook</h3>
+<input id="spellSearch" placeholder="Search spells" oninput="renderSpellList()">
+<div id="spellList" class="scroll"></div>
+</div>
+
+<div id="rules" class="tab">
+<h3>Rules Reference</h3>
+<input id="ruleSearch" placeholder="Search rules" oninput="renderRules()">
+<div id="ruleList" class="scroll"></div>
+</div>
+
 <div id="import" class="tab">
 <input type="file" id="fileInput">
 <button onclick="importJSON()">Load</button>
@@ -50,37 +65,38 @@ input,select,button{margin:5px;padding:6px}
 // DATA
 const RACES={Human:{all:1,speed:30},Elf:{dex:2,speed:30},Dwarf:{con:2,speed:25},Halfling:{dex:2,speed:25}};
 
-const CLASSES={
-Wizard:{hitDie:6,primary:'int',spellcaster:true,subclasses:{Evocation:{3:['Sculpt Spells'],6:['Potent Cantrip']}}},
-Cleric:{hitDie:8,primary:'wis',spellcaster:true,subclasses:{Life:{1:['Bonus Healing'],6:['Improved Healing']}}},
-Fighter:{hitDie:10,primary:'str',spellcaster:false,subclasses:{Champion:{3:['Improved Crit'],7:['Remarkable Athlete']}}},
-Rogue:{hitDie:8,primary:'dex',spellcaster:false,subclasses:{Thief:{3:['Fast Hands'],9:['Supreme Sneak']}}}
-};
+const CLASSES={Wizard:{hitDie:6,primary:'int',spellcaster:true},Cleric:{hitDie:8,primary:'wis',spellcaster:true},Fighter:{hitDie:10,primary:'str'},Rogue:{hitDie:8,primary:'dex'}};
 
-const SPELLS={Wizard:{0:['Fire Bolt','Mage Hand'],1:['Magic Missile','Shield'],3:['Fireball']},Cleric:{0:['Guidance'],1:['Cure Wounds','Bless']}};
+// Expanded SRD-style spell sample (extendable)
+const SPELL_DB=[
+{name:'Fire Bolt',level:0,class:['Wizard'],desc:'Ranged spell attack fire damage'},
+{name:'Mage Hand',level:0,class:['Wizard'],desc:'Summon spectral hand'},
+{name:'Magic Missile',level:1,class:['Wizard'],desc:'Auto-hit force darts'},
+{name:'Shield',level:1,class:['Wizard'],desc:'+5 AC reaction'},
+{name:'Fireball',level:3,class:['Wizard'],desc:'Large AoE fire damage'},
+{name:'Cure Wounds',level:1,class:['Cleric'],desc:'Heal target'},
+{name:'Bless',level:1,class:['Cleric'],desc:'Buff allies'}
+];
 
-const SPELL_SLOTS={
-1:[2],2:[3],3:[4,2],4:[4,3],5:[4,3,2]
-};
-
-const WEAPONS=[{name:'Longsword',dmg:'1d8',prop:['versatile']},{name:'Dagger',dmg:'1d4',prop:['finesse']}];
-const ARMOR=[{name:'Leather',ac:11,type:'light'},{name:'Chain Mail',ac:16,type:'heavy'}];
+const RULES=[
+{name:'Grappled',desc:'Speed becomes 0. Ends if grappler incapacitated or moved.'},
+{name:'Prone',desc:'Disadvantage on attacks, attackers within 5ft have advantage.'},
+{name:'Advantage',desc:'Roll twice, take higher.'},
+{name:'Disadvantage',desc:'Roll twice, take lower.'}
+];
 
 const STANDARD=[15,14,13,12,10,8];
 
 // UTILS
 const mod=s=>Math.floor((s-10)/2);
 const prof=l=>l<=4?2:l<=8?3:l<=12?4:l<=16?5:6;
-
 function calcHP(hitDie,l,con){let avg=Math.ceil(hitDie/2)+1;return hitDie+con+(l-1)*(avg+con)}
-
-function applyCR(char){if(!char.cr)return char;char.hp=Math.floor(char.hp*(1+char.cr*0.15));char.attack+=Math.floor(char.cr/2);return char}
 
 // CORE
 function generateCharacter(){
-let race=document.getElementById('race').value;
-let cls=document.getElementById('class').value;
-let lvl=+document.getElementById('level').value;
+let race=raceSel.value;
+let cls=classSel.value;
+let lvl=+level.value;
 let cr=+document.getElementById('cr').value||0;
 
 let arr=[...STANDARD].sort(()=>Math.random()-0.5);
@@ -91,50 +107,43 @@ if(r.all)Object.keys(stats).forEach(k=>stats[k]+=r.all);
 else Object.keys(r).forEach(k=>{if(stats[k]!=null)stats[k]+=r[k]});
 
 let mods={};Object.keys(stats).forEach(k=>mods[k]=mod(stats[k]));
-
 let p=prof(lvl);
 let hp=calcHP(CLASSES[cls].hitDie,lvl,mods.con);
-
-let weapon=WEAPONS[Math.floor(Math.random()*WEAPONS.length)];
-let armor=ARMOR[Math.floor(Math.random()*ARMOR.length)];
-
-let ac=armor.type==='light'?armor.ac+mods.dex:armor.ac;
+let ac=10+mods.dex;
 let attack=p+mods[CLASSES[cls].primary];
 
-let spells=CLASSES[cls].spellcaster?SPELLS[cls]||{}:{};
-let slots=SPELL_SLOTS[lvl]||[];
+let spells=SPELL_DB.filter(s=>s.class.includes(cls)&&s.level<=Math.ceil(lvl/2));
 
-let subclassKeys=Object.keys(CLASSES[cls].subclasses);
-let subclass=subclassKeys[Math.floor(Math.random()*subclassKeys.length)];
-
-let features=[];
-let sub=CLASSES[cls].subclasses[subclass];
-Object.keys(sub).forEach(l=>{if(lvl>=l)features.push(...sub[l])});
-
-let char={name:document.getElementById('name').value||'Hero',race,cls,lvl,cr,stats,mods,hp,ac,attack,weapon,armor,spells,slots,subclass,features};
-char=applyCR(char);
-
+let char={name:name.value||'Hero',race,cls,lvl,cr,stats,mods,hp,ac,attack,spells};
 localStorage.setItem('char',JSON.stringify(char));
 renderSheet(char);
 }
 
 function renderSheet(c){
-let el=document.getElementById('sheetView');
-el.innerHTML=`<div class='grid'>
-<div class='card'><b>${c.name}</b><br>${c.race} ${c.cls} lvl ${c.lvl}<br>Subclass: ${c.subclass}</div>
-<div class='card'>HP: ${c.hp}<br>AC: ${c.ac}<br>Attack: ${c.attack}</div>
-<div class='card'>Weapon: ${c.weapon.name} (${c.weapon.dmg})<br>Armor: ${c.armor.name}</div>
-<div class='card'>Stats: ${JSON.stringify(c.stats)}</div>
-<div class='card'>Features: ${c.features.join(', ')}</div>
-<div class='card'>Spells: ${JSON.stringify(c.spells)}</div>
-<div class='card'>Slots: ${c.slots}</div>
+sheetView.innerHTML=`<div class='grid'>
+<div class='card'><b>${c.name}</b><br>${c.race} ${c.cls} lvl ${c.lvl}</div>
+<div class='card'>HP ${c.hp}<br>AC ${c.ac}<br>ATK ${c.attack}</div>
+<div class='card'>Stats ${JSON.stringify(c.stats)}</div>
+<div class='card'>Spells ${c.spells.map(s=>s.name).join(', ')}</div>
 </div>`;
 }
 
+// SPELL UI
+function renderSpellList(){
+let q=spellSearch.value.toLowerCase();
+spellList.innerHTML=SPELL_DB.filter(s=>s.name.toLowerCase().includes(q)).map(s=>`<div class='card'><b>${s.name}</b> (lvl ${s.level})<br>${s.desc}</div>`).join('');
+}
+
+// RULES UI
+function renderRules(){
+let q=ruleSearch.value.toLowerCase();
+ruleList.innerHTML=RULES.filter(r=>r.name.toLowerCase().includes(q)).map(r=>`<div class='card'><b>${r.name}</b><br>${r.desc}</div>`).join('');
+}
+
 function randomCharacter(){
-document.getElementById('race').value=Object.keys(RACES)[Math.floor(Math.random()*4)];
-document.getElementById('class').value=Object.keys(CLASSES)[Math.floor(Math.random()*4)];
-document.getElementById('level').value=Math.floor(Math.random()*20)+1;
+raceSel.value=Object.keys(RACES)[Math.floor(Math.random()*4)];
+classSel.value=Object.keys(CLASSES)[Math.floor(Math.random()*4)];
+level.value=Math.floor(Math.random()*20)+1;
 generateCharacter();
 }
 
@@ -145,17 +154,32 @@ let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='c
 }
 
 function importJSON(){
-let file=document.getElementById('fileInput').files[0];
+let file=fileInput.files[0];
 let r=new FileReader();
-r.onload=()=>{let c=JSON.parse(r.result);renderSheet(c);};
+r.onload=()=>{let c=JSON.parse(r.result);renderSheet(c)};
 r.readAsText(file);
 }
 
-function showTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active')}
 
 function init(){
-Object.keys(RACES).forEach(r=>{let o=document.createElement('option');o.text=r;race.add(o)});
-Object.keys(CLASSES).forEach(c=>{let o=document.createElement('option');o.text=c;class.add(o)});
+window.raceSel=document.getElementById('race');
+window.classSel=document.getElementById('class');
+window.level=document.getElementById('level');
+window.name=document.getElementById('name');
+window.sheetView=document.getElementById('sheetView');
+window.spellSearch=document.getElementById('spellSearch');
+window.spellList=document.getElementById('spellList');
+window.ruleSearch=document.getElementById('ruleSearch');
+window.ruleList=document.getElementById('ruleList');
+window.fileInput=document.getElementById('fileInput');
+
+Object.keys(RACES).forEach(r=>{let o=document.createElement('option');o.text=r;raceSel.add(o)});
+Object.keys(CLASSES).forEach(c=>{let o=document.createElement('option');o.text=c;classSel.add(o)});
+
+renderSpellList();
+renderRules();
+
 let saved=localStorage.getItem('char');if(saved)renderSheet(JSON.parse(saved));
 }
 init();
