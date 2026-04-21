@@ -18,34 +18,32 @@
 
 <div id="gen" class="tab active">
     <div class="card">
-        <label>Name</label>
-        <input id="name" placeholder="Hero Name">
+        <label>Character Name</label>
+        <input id="name" placeholder="Enter Name">
 
         <label>Class</label>
-        <select id="class"></select>
-
-        <label>Subclass</label>
-        <select id="subclass"></select>
+        <select id="classSelect"></select>
 
         <label>Level</label>
         <input id="level" type="number" value="1" min="1" max="20">
 
-        <button class="primary-btn" onclick="generateCharacter()">Generate</button>
+        <button class="primary-btn" onclick="generateCharacter()">Generate Character</button>
     </div>
 </div>
 
 <div id="sheet" class="tab">
-    <div id="sheetOutput"></div> </div>
+    <div id="sheetOutput"></div>
+</div>
 
 <div id="spells" class="tab">
     <label>Search Spells</label>
-    <input id="spellSearch" placeholder="Filter spells...">
+    <input id="spellSearch" placeholder="Search spells...">
     <div id="spellList"></div>
 </div>
 
 <div id="rules" class="tab">
-    <label>Search Rules</label>
-    <input id="ruleSearch" placeholder="Filter conditions...">
+    <label>Search Conditions</label>
+    <input id="ruleSearch" placeholder="Search conditions...">
     <div id="ruleList"></div>
 </div>
 
