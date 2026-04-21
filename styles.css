@@ -1,252 +1,95 @@
-let CLASSES = [];
-let SUBCLASSES = [];
-let SPELLS = [];
-let RULES = [];
-
-/* =========================
-   ABILITY SCORE SYSTEM
-========================= */
-function rollStats() {
-  const roll = () =>
-    Array.from({ length: 4 }, () => Math.floor(Math.random() * 6) + 1)
-      .sort()
-      .slice(1)
-      .reduce((a, b) => a + b, 0);
-
-  return {
-    str: roll(),
-    dex: roll(),
-    con: roll(),
-    int: roll(),
-    wis: roll(),
-    cha: roll()
-  };
+:root {
+    --bg: #1a1a1a;
+    --card-bg: #2d2d2d;
+    --text: #e0e0e0;
+    --accent: #d32f2f;
+    --border: #444;
 }
 
-function mod(score) {
-  return Math.floor((score - 10) / 2);
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    line-height: 1.6;
 }
 
-/* =========================
-   SPELL SLOTS (simplified SRD scaling)
-========================= */
-function getSpellSlots(level) {
-  const table = {
-    1: [2],
-    2: [3],
-    3: [4,2],
-    4: [4,3],
-    5: [4,3,2],
-    6: [4,3,3],
-    7: [4,3,3,1],
-    8: [4,3,3,2],
-    9: [4,3,3,3,1],
-    10:[4,3,3,3,2],
-  };
-
-  return table[level] || [0];
+header {
+    background: #000;
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 3px solid var(--accent);
 }
 
-/* =========================
-   HP CALC (simple but functional)
-========================= */
-function getHP(cls, level, conMod) {
-  let base = 10;
-
-  if (cls === "Wizard") base = 6;
-  if (cls === "Sorcerer") base = 6;
-  if (cls === "Fighter") base = 10;
-  if (cls === "Barbarian") base = 12;
-
-  return base + (level - 1) * (base / 2) + level * conMod;
+.tabs {
+    display: flex;
+    justify-content: center;
+    background: #111;
+    padding: 10px;
 }
 
-/* =========================
-   LOAD DATA
-========================= */
-async function loadData() {
-  const c = await fetch("https://www.dnd5eapi.co/api/classes").then(r => r.json());
-  CLASSES = c.results;
-
-  const s = await fetch("https://www.dnd5eapi.co/api/subclasses").then(r => r.json());
-  SUBCLASSES = s.results;
-
-  const sp = await fetch("https://www.dnd5eapi.co/api/spells").then(r => r.json());
-  SPELLS = sp.results;
-
-  const r = await fetch("https://www.dnd5eapi.co/api/conditions").then(r => r.json());
-  RULES = r.results;
-
-  populateClasses();
-  renderSpells();
-  renderRules();
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--text);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    border-bottom: 2px solid transparent;
 }
 
-/* =========================
-   UI
-========================= */
-function showTab(id) {
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+.tab-btn:hover { color: var(--accent); }
+
+.tab { display: none; padding: 20px; max-width: 800px; margin: auto; }
+.tab.active { display: block; }
+
+.card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 15px;
 }
 
-/* =========================
-   CLASSES + SUBCLASSES
-========================= */
-function populateClasses() {
-  const sel = document.getElementById("class");
-  sel.innerHTML = "";
-
-  CLASSES.forEach(c => {
-    let o = document.createElement("option");
-    o.text = c.name;
-    sel.add(o);
-  });
-
-  updateSubclasses();
+input, select, button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0 20px 0;
+    background: #111;
+    border: 1px solid var(--border);
+    color: white;
+    border-radius: 4px;
 }
 
-document.getElementById("class").addEventListener("change", updateSubclasses);
-
-function updateSubclasses() {
-  const cls = document.getElementById("class").value;
-  const sel = document.getElementById("subclass");
-  sel.innerHTML = "";
-
-  SUBCLASSES
-    .filter(s => s.class?.name?.toLowerCase() === cls.toLowerCase())
-    .forEach(s => {
-      let o = document.createElement("option");
-      o.text = s.name;
-      sel.add(o);
-    });
+.primary-btn {
+    background: var(--accent);
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
 }
 
-/* =========================
-   CHARACTER GENERATION (REAL SHEET)
-========================= */
-let currentStats = rollStats();
-
-function generateCharacter() {
-  const name = document.getElementById("name").value || "Hero";
-  const cls = document.getElementById("class").value;
-  const sub = document.getElementById("subclass").value;
-  const lvl = +document.getElementById("level").value;
-
-  const con = mod(currentStats.con);
-  const dex = mod(currentStats.dex);
-
-  const hp = getHP(cls, lvl, con);
-  const ac = 10 + dex;
-
-  const slots = getSpellSlots(lvl);
-
-  document.getElementById("sheet").innerHTML = `
-    <div class="card">
-      <b>${name}</b><br>
-      ${cls} (${sub})<br>
-      Level ${lvl}
-    </div>
-
-    <div class="card">
-      <b>Stats</b><br>
-      STR ${currentStats.str} (${mod(currentStats.str)})<br>
-      DEX ${currentStats.dex} (${mod(currentStats.dex)})<br>
-      CON ${currentStats.con} (${mod(currentStats.con)})<br>
-      INT ${currentStats.int} (${mod(currentStats.int)})<br>
-      WIS ${currentStats.wis} (${mod(currentStats.wis)})<br>
-      CHA ${currentStats.cha} (${mod(currentStats.cha)})
-    </div>
-
-    <div class="card">
-      HP: ${hp}<br>
-      AC: ${ac}
-    </div>
-
-    <div class="card">
-      Spell Slots: ${slots.join(", ")}
-    </div>
-
-    <button onclick="exportCharacter()">Export JSON</button>
-  `;
-
-  showTab("sheet");
+.split-view {
+    display: flex;
+    gap: 20px;
+    height: 500px;
 }
 
-/* =========================
-   SPELLS
-========================= */
-document.getElementById("spellSearch").addEventListener("input", renderSpells);
-
-function renderSpells() {
-  let q = document.getElementById("spellSearch").value.toLowerCase();
-
-  document.getElementById("spellList").innerHTML = SPELLS
-    .filter(s => s.name.toLowerCase().includes(q))
-    .slice(0, 50)
-    .map(s => `
-      <div class="card" onclick="loadSpell('${s.index}')">
-        ${s.name}
-      </div>
-    `)
-    .join("");
+.scroll-list {
+    flex: 1;
+    overflow-y: auto;
+    background: #111;
+    padding: 10px;
 }
 
-async function loadSpell(index) {
-  const res = await fetch(`https://www.dnd5eapi.co/api/spells/${index}`);
-  const d = await res.json();
-
-  document.getElementById("spellDetails").innerHTML = `
-    <div class="card">
-      <b>${d.name}</b><br>
-      Level ${d.level}<br>
-      ${d.desc?.join("<br>")}
-    </div>
-  `;
+.detail-card {
+    flex: 2;
+    background: var(--card-bg);
+    padding: 20px;
+    border: 1px solid var(--accent);
 }
 
-/* =========================
-   RULES
-========================= */
-document.getElementById("ruleSearch").addEventListener("input", renderRules);
-
-function renderRules() {
-  let q = document.getElementById("ruleSearch").value.toLowerCase();
-
-  document.getElementById("ruleList").innerHTML = RULES
-    .filter(r => r.name.toLowerCase().includes(q))
-    .map(r => `
-      <div class="card">
-        <b>${r.name}</b><br>
-        ${r.desc?.join(" ")}
-      </div>
-    `)
-    .join("");
+.grid-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
 }
-
-/* =========================
-   EXPORT / IMPORT
-========================= */
-function exportCharacter() {
-  const data = {
-    name: document.getElementById("name").value,
-    class: document.getElementById("class").value,
-    subclass: document.getElementById("subclass").value,
-    level: document.getElementById("level").value,
-    stats: currentStats
-  };
-
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json"
-  });
-
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "character.json";
-  a.click();
-}
-
-/* =========================
-   START
-========================= */
-loadData();
