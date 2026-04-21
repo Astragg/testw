@@ -1,50 +1,49 @@
-let SPELLS = [];
 let CLASSES = [];
 let SUBCLASSES = [];
+let SPELLS = [];
 let RULES = [];
 
-// ===== LOAD DATA =====
+// -------------------- LOAD DATA --------------------
 async function loadData() {
+  try {
+    // CLASSES
+    let c = await fetch("https://www.dnd5eapi.co/api/classes");
+    let cd = await c.json();
+    CLASSES = cd.results || [];
 
-  // Classes
-  let classRes = await fetch("https://www.dnd5eapi.co/api/classes");
-  let classData = await classRes.json();
-  CLASSES = classData.results;
+    // SUBCLASSES
+    let s = await fetch("https://www.dnd5eapi.co/api/subclasses");
+    let sd = await s.json();
+    SUBCLASSES = sd.results || [];
 
-  // Subclasses
-  let subRes = await fetch("https://www.dnd5eapi.co/api/subclasses");
-  let subData = await subRes.json();
-  SUBCLASSES = subData.results;
+    // SPELL LIST (lightweight list only)
+    let sp = await fetch("https://www.dnd5eapi.co/api/spells");
+    let spd = await sp.json();
+    SPELLS = spd.results || [];
 
-  // Spells (full details)
-  let spellRes = await fetch("https://www.dnd5eapi.co/api/spells");
-  let spellData = await spellRes.json();
-  SPELLS = await Promise.all(
-    spellData.results.map(s =>
-      fetch("https://www.dnd5eapi.co" + s.url).then(r => r.json())
-    )
-  );
+    // CONDITIONS (rules tab)
+    let r = await fetch("https://www.dnd5eapi.co/api/conditions");
+    let rd = await r.json();
+    RULES = rd.results || [];
 
-  // Rules (conditions)
-  let ruleRes = await fetch("https://www.dnd5eapi.co/api/conditions");
-  let ruleData = await ruleRes.json();
-  RULES = await Promise.all(
-    ruleData.results.map(r =>
-      fetch("https://www.dnd5eapi.co" + r.url).then(x => x.json())
-    )
-  );
+    populateClasses();
+    renderSpells();
+    renderRules();
 
-  populateClasses();
-  renderSpells();
-  renderRules();
+    console.log("Loaded SRD data successfully");
+
+  } catch (err) {
+    console.error("Load failed:", err);
+  }
 }
 
-// ===== UI =====
+// -------------------- UI --------------------
 function showTab(id) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
+// -------------------- CLASSES --------------------
 function populateClasses() {
   let sel = document.getElementById("class");
   sel.innerHTML = "";
@@ -74,7 +73,7 @@ function updateSubclasses() {
     });
 }
 
-// ===== GENERATOR =====
+// -------------------- CHARACTER --------------------
 function generateCharacter() {
   let name = document.getElementById("name").value || "Hero";
   let cls = document.getElementById("class").value;
@@ -83,30 +82,22 @@ function generateCharacter() {
 
   let hp = 10 + lvl * 5;
 
-  let classSpells = SPELLS.filter(s =>
-    s.classes?.some(c => c.name === cls)
-  ).slice(0, 6);
-
   document.getElementById("sheet").innerHTML = `
     <div class="card">
       <b>${name}</b><br>
-      ${cls} (${sub}) - Level ${lvl}
+      ${cls} (${sub})<br>
+      Level ${lvl}
     </div>
 
     <div class="card">
-      <b>HP:</b> ${hp}
-    </div>
-
-    <div class="card">
-      <b>Spells:</b><br>
-      ${classSpells.map(s => s.name).join(", ")}
+      HP: ${hp}
     </div>
   `;
 
   showTab("sheet");
 }
 
-// ===== SPELLS =====
+// -------------------- SPELL LIST --------------------
 document.getElementById("spellSearch").addEventListener("input", renderSpells);
 
 function renderSpells() {
@@ -116,15 +107,29 @@ function renderSpells() {
     .filter(s => s.name.toLowerCase().includes(q))
     .slice(0, 50)
     .map(s => `
-      <div class="card">
-        <b>${s.name}</b> (Level ${s.level})<br>
-        ${s.desc ? s.desc[0] : ""}
+      <div class="card" onclick="loadSpell('${s.index}')">
+        ${s.name}
       </div>
     `)
     .join("");
 }
 
-// ===== RULES =====
+// -------------------- SPELL DETAILS --------------------
+async function loadSpell(index) {
+  let res = await fetch(`https://www.dnd5eapi.co/api/spells/${index}`);
+  let data = await res.json();
+
+  document.getElementById("spellDetails").innerHTML = `
+    <b>${data.name}</b><br>
+    Level: ${data.level}<br>
+    Range: ${data.range}<br>
+    Duration: ${data.duration}<br>
+    <br>
+    ${data.desc?.join("<br>") || ""}
+  `;
+}
+
+// -------------------- RULES --------------------
 document.getElementById("ruleSearch").addEventListener("input", renderRules);
 
 function renderRules() {
@@ -134,12 +139,11 @@ function renderRules() {
     .filter(r => r.name.toLowerCase().includes(q))
     .map(r => `
       <div class="card">
-        <b>${r.name}</b><br>
-        ${r.desc.join(" ")}
+        <b>${r.name}</b>
       </div>
     `)
     .join("");
 }
 
-// START
+// -------------------- START --------------------
 loadData();
