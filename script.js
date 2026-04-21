@@ -1,121 +1,99 @@
-// ===== UTILS =====
-const mod = s => Math.floor((s - 10) / 2);
-const prof = lvl =>
-  lvl <= 4 ? 2 :
-  lvl <= 8 ? 3 :
-  lvl <= 12 ? 4 :
-  lvl <= 16 ? 5 : 6;
+let SPELLS = [];
+let CLASSES = [];
 
-function calcHP(hitDie, level, conMod) {
-  let avg = Math.ceil(hitDie / 2) + 1;
-  return hitDie + conMod + (level - 1) * (avg + conMod);
+// ===== LOAD DATA =====
+async function loadData() {
+  // Try cache first
+  if (localStorage.getItem("spells")) {
+    SPELLS = JSON.parse(localStorage.getItem("spells"));
+    CLASSES = JSON.parse(localStorage.getItem("classes"));
+    populateClasses();
+    renderSpells();
+    return;
+  }
+
+  // Fetch classes
+  let classRes = await fetch("https://www.dnd5eapi.co/api/classes");
+  let classData = await classRes.json();
+
+  CLASSES = await Promise.all(
+    classData.results.map(c =>
+      fetch("https://www.dnd5eapi.co" + c.url).then(r => r.json())
+    )
+  );
+
+  // Fetch spells
+  let spellRes = await fetch("https://www.dnd5eapi.co/api/spells");
+  let spellData = await spellRes.json();
+
+  SPELLS = await Promise.all(
+    spellData.results.map(s =>
+      fetch("https://www.dnd5eapi.co" + s.url).then(r => r.json())
+    )
+  );
+
+  // Save to cache
+  localStorage.setItem("spells", JSON.stringify(SPELLS));
+  localStorage.setItem("classes", JSON.stringify(CLASSES));
+
+  populateClasses();
+  renderSpells();
 }
 
 // ===== UI =====
-function showTab(id) {
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+function populateClasses() {
+  let sel = document.getElementById("class");
+  sel.innerHTML = "";
+  CLASSES.forEach(c => {
+    let o = document.createElement("option");
+    o.text = c.name;
+    sel.add(o);
+  });
 }
 
-// ===== GENERATOR =====
+// ===== GENERATE CHARACTER =====
 function generateCharacter() {
-  let race = raceSel.value;
-  let cls = classSel.value;
-  let lvl = +levelInput.value;
+  let name = document.getElementById("name").value || "Hero";
+  let cls = document.getElementById("class").value;
+  let lvl = +document.getElementById("level").value;
 
-  let stats = { str:15, dex:14, con:13, int:12, wis:10, cha:8 };
+  let hp = 10 + lvl * 5;
 
-  // apply race
-  let r = RACES[race];
-  if (r.all) Object.keys(stats).forEach(k => stats[k] += r.all);
-  else Object.keys(r).forEach(k => { if(stats[k]!=null) stats[k]+=r[k]; });
+  let classSpells = SPELLS.filter(s =>
+    s.classes?.some(c => c.name === cls)
+  ).slice(0, 6);
 
-  let mods = {};
-  Object.keys(stats).forEach(k => mods[k] = mod(stats[k]));
+  document.getElementById("sheet").innerHTML = `
+    <div class="card">
+      <b>${name}</b><br>
+      ${cls} Level ${lvl}<br>
+      HP: ${hp}
+    </div>
 
-  let hp = calcHP(CLASSES[cls].hitDie, lvl, mods.con);
-  let ac = 10 + mods.dex;
-  let attack = prof(lvl) + mods[CLASSES[cls].primary];
-
-  let spells = SPELL_DB.filter(s =>
-    s.classes.includes(cls) && s.level <= Math.ceil(lvl / 2)
-  );
-
-  let items = ITEMS.sort(() => 0.5 - Math.random()).slice(0, 2);
-
-  let char = {
-    name: nameInput.value || "Hero",
-    race, cls, lvl,
-    stats, hp, ac, attack,
-    spells, items
-  };
-
-  localStorage.setItem("char", JSON.stringify(char));
-  renderSheet(char);
-}
-
-// ===== SHEET =====
-function renderSheet(c) {
-  sheetView.innerHTML = `
-    <div class="card"><b>${c.name}</b><br>${c.race} ${c.cls} lvl ${c.lvl}</div>
-    <div class="card">HP: ${c.hp} | AC: ${c.ac} | ATK: ${c.attack}</div>
-    <div class="card">Stats: ${JSON.stringify(c.stats)}</div>
-    <div class="card">Items: ${c.items.map(i=>i.name).join(", ")}</div>
-    <div class="card">Spells: ${c.spells.map(s=>s.name).join(", ")}</div>
+    <div class="card">
+      <b>Spells:</b><br>
+      ${classSpells.map(s => s.name).join(", ")}
+    </div>
   `;
 }
 
-// ===== SPELLS =====
+// ===== SPELL SEARCH =====
+document.getElementById("spellSearch").addEventListener("input", renderSpells);
+
 function renderSpells() {
-  let q = spellSearch.value.toLowerCase();
-  spellList.innerHTML = SPELL_DB
+  let q = document.getElementById("spellSearch").value.toLowerCase();
+
+  document.getElementById("spellList").innerHTML = SPELLS
     .filter(s => s.name.toLowerCase().includes(q))
-    .map(s => `<div class="card"><b>${s.name}</b> (lvl ${s.level})<br>${s.desc}</div>`)
+    .slice(0, 50)
+    .map(s => `
+      <div class="card">
+        <b>${s.name}</b> (Level ${s.level})<br>
+        ${s.desc ? s.desc[0] : ""}
+      </div>
+    `)
     .join("");
 }
 
-// ===== RULES =====
-function renderRules() {
-  let q = ruleSearch.value.toLowerCase();
-  ruleList.innerHTML = RULES
-    .filter(r => r.name.toLowerCase().includes(q))
-    .map(r => `<div class="card"><b>${r.name}</b><br>${r.desc}</div>`)
-    .join("");
-}
-
-// ===== INIT =====
-function init() {
-  window.raceSel = document.getElementById("race");
-  window.classSel = document.getElementById("class");
-  window.levelInput = document.getElementById("level");
-  window.nameInput = document.getElementById("name");
-
-  window.sheetView = document.getElementById("sheetView");
-  window.spellSearch = document.getElementById("spellSearch");
-  window.spellList = document.getElementById("spellList");
-  window.ruleSearch = document.getElementById("ruleSearch");
-  window.ruleList = document.getElementById("ruleList");
-
-  Object.keys(RACES).forEach(r => {
-    let o = document.createElement("option");
-    o.text = r;
-    raceSel.add(o);
-  });
-
-  Object.keys(CLASSES).forEach(c => {
-    let o = document.createElement("option");
-    o.text = c;
-    classSel.add(o);
-  });
-
-  spellSearch.oninput = renderSpells;
-  ruleSearch.oninput = renderRules;
-
-  renderSpells();
-  renderRules();
-
-  let saved = localStorage.getItem("char");
-  if (saved) renderSheet(JSON.parse(saved));
-}
-
-init();
+// START
+loadData();
