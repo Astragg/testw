@@ -1,49 +1,98 @@
-<header>
-    <div class="container header-flex">
-        <div class="logo">PLAYER <span>PRO</span></div>
-        <div class="auth-controls">
-            <div id="authStatus">
-                <button class="btn-secondary" onclick="showAuthModal()">Login / Sign Up</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Recruit | Player Profiles</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <nav class="main-nav">
+        <div class="container nav-flex">
+            <div class="logo">PLAYER<span>PRO</span></div>
+            <div class="nav-right">
+                <input type="text" id="searchBar" placeholder="Search players..." onkeyup="filterPlayers()">
+                <div id="authContainer">
+                    <button class="btn-outline" onclick="openAuthModal()">Login / Sign Up</button>
+                </div>
+                <button class="btn-primary" id="addPlayerBtn" style="display:none;" onclick="openPlayerModal()">+ Add Profile</button>
             </div>
-            <button class="btn-add" id="addBtn" style="display:none;" onclick="openModal()">+ Add Profile</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div id="playerGrid" class="player-grid">
+            <!-- Cards load here -->
+        </div>
+    </main>
+
+    <!-- FORM MODAL (Add/Edit) -->
+    <div id="playerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('playerModal')">&times;</span>
+            <h2 id="modalTitle">Player Editor</h2>
+            <form id="playerForm">
+                <input type="hidden" id="playerId">
+                <div class="form-row">
+                    <input type="text" id="name" placeholder="Full Name" required>
+                    <input type="text" id="position" placeholder="Position (e.g. Guard / Wing)">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="classYear" placeholder="Class (e.g. 2027)">
+                    <input type="text" id="number" placeholder="Jersey #">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="height" placeholder="Height">
+                    <input type="text" id="weight" placeholder="Weight">
+                </div>
+                <div class="form-row">
+                    <input type="number" id="age" placeholder="Age">
+                    <input type="text" id="location" placeholder="Location">
+                </div>
+                <input type="text" id="rank" placeholder="State Rank">
+                <input type="text" id="archetype" placeholder="Archetype (e.g. Glue Player)">
+                <input type="text" id="video_url" placeholder="Highlights URL (YouTube/Veo)">
+
+                <label>Skill Set</label>
+                <div id="skillsEntryContainer">
+                    <div class="skill-input-row">
+                        <select class="skill-name">
+                            <option value="Shooting">Shooting</option>
+                            <option value="Passing">Passing</option>
+                            <option value="Rebounding">Rebounding</option>
+                            <option value="Dunking">Dunking</option>
+                            <option value="Defense">Defense</option>
+                            <option value="Mechanics">Mechanics</option>
+                            <option value="Driving">Driving</option>
+                        </select>
+                        <select class="skill-level">
+                            <option value="ELITE">ELITE</option>
+                            <option value="GREAT">GREAT</option>
+                            <option value="SITUATIONAL">SITUATIONAL</option>
+                            <option value="DEVELOPING">DEVELOPING</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn-text" onclick="addSkillRow()">+ Add Another Skill</button>
+                <button type="submit" class="btn-full">Save Profile</button>
+            </form>
         </div>
     </div>
-</header>
 
-<!-- Auth Modal -->
-<div id="authModal" class="modal">
-    <div class="modal-content">
-        <h2 id="authTitle">Login</h2>
-        <input type="email" id="authEmail" placeholder="Email">
-        <input type="password" id="authPass" placeholder="Password">
-        <button onclick="handleAuth()" class="btn-submit">Continue</button>
-        <p onclick="toggleAuthMode()" id="authToggle" style="cursor:pointer; font-size: 0.8rem; text-align: center;">Need an account? Sign Up</p>
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="modal">
+        <div class="modal-content mini">
+            <span class="close" onclick="closeModal('authModal')">&times;</span>
+            <h2 id="authTitle">Login</h2>
+            <input type="email" id="authEmail" placeholder="Email">
+            <input type="password" id="authPass" placeholder="Password">
+            <button onclick="handleAuth()" class="btn-full">Continue</button>
+            <p id="authToggle" onclick="toggleAuthMode()">Need an account? Sign Up</p>
+        </div>
     </div>
-</div>
 
-<!-- Updated Player Form (Inside the existing playerModal) -->
-<div class="form-row">
-    <input type="text" id="video_url" placeholder="Highlights URL (YouTube/Veo)">
-</div>
-
-<label>Skill Set</label>
-<div id="skillsContainer">
-    <div class="skill-input-row">
-        <select class="skill-name">
-            <option value="Shooting">Shooting</option>
-            <option value="Passing">Passing</option>
-            <option value="Rebounding">Rebounding</option>
-            <option value="Dunking">Dunking</option>
-            <option value="Defense">Defense</option>
-            <option value="Mechanics">Mechanics</option>
-            <option value="Driving">Driving</option>
-        </select>
-        <select class="skill-level">
-            <option value="Elite">Elite</option>
-            <option value="Great">Great</option>
-            <option value="Situational">Situational</option>
-            <option value="Developing">Developing</option>
-        </select>
-    </div>
-</div>
-<button type="button" onclick="addSkillRow()" style="background:none; border:none; color:green; cursor:pointer;">+ Add Another Skill</button>
+    <script src="script.js"></script>
+</body>
+</html>
