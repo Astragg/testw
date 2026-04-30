@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ApexScout | Elite Prospect Database</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -14,13 +15,16 @@
             <div class="brand">APEX<span>SCOUT</span></div>
             <div class="nav-right">
                 <input type="text" id="search" placeholder="Search athletes..." onkeyup="filter()">
-                <div id="authArea"></div>
+                <div id="authArea">
+                    <!-- Login button will appear here -->
+                </div>
                 <button class="btn-create" id="addBtn" style="display:none" onclick="openEditor()">+ Create Profile</button>
             </div>
         </div>
     </nav>
 
     <main class="container">
+        <!-- If this is blank, it means no players are in your database yet -->
         <div id="grid" class="profile-grid"></div>
     </main>
 
@@ -28,13 +32,11 @@
     <div id="authModal" class="modal">
         <div class="modal-card mini">
             <h2 id="aTitle">Sign In</h2>
-            <div class="input-stack">
-                <input type="email" id="aEmail" placeholder="Email Address">
-                <input type="password" id="aPass" placeholder="Password">
-            </div>
+            <input type="email" id="aEmail" placeholder="Email Address">
+            <input type="password" id="aPass" placeholder="Password">
             <button class="btn-primary" onclick="handleAuth()">Continue</button>
-            <p id="aToggle" onclick="swapAuth()">Need an account? Sign Up</p>
-            <button class="btn-close" onclick="closeModal('authModal')">Cancel</button>
+            <p id="aToggle" onclick="swapAuth()" style="cursor:pointer; font-size:0.8rem; margin-top:10px;">Need an account? Sign Up</p>
+            <button class="btn-text" onclick="closeModal('authModal')" style="margin-top:10px;">Cancel</button>
         </div>
     </div>
 
@@ -54,13 +56,13 @@
                     <div><label>Class Year</label><input id="year" placeholder="e.g. 2027"></div>
                     <div><label>Jersey #</label><input id="num"></div>
                     <div><label>Height</label><input id="h" placeholder="e.g. 6'4"></div>
-                    <div><label>Weight (LB)</label><input id="w" type="number"></div>
-                    <div><label>Age</label><input id="age" type="number"></div>
+                    <div><label>Weight (LB)</label><input id="w"></div>
+                    <div><label>Age</label><input id="age"></div>
                     <div class="span-2"><label>Location</label><input id="loc" placeholder="City, State"></div>
                 </div>
 
                 <div class="stat-section">
-                    <label>Season Averages (Numbers Only)</label>
+                    <label>Season Averages</label>
                     <div class="stat-inputs">
                         <input id="avg_pts" placeholder="PTS">
                         <input id="avg_ast" placeholder="AST">
@@ -72,7 +74,7 @@
                 <div class="skill-section">
                     <label>Skill Ratings</label>
                     <div id="skillsList"></div>
-                    <button type="button" class="btn-add-skill" onclick="addSkillRow()">+ Add Skill</button>
+                    <button type="button" class="btn-text" onclick="addSkillRow()" style="color:var(--apex-green)">+ Add Skill</button>
                 </div>
 
                 <div class="form-grid">
@@ -81,11 +83,12 @@
                     <div class="span-2"><label>Highlight Link</label><input id="vid"></div>
                 </div>
 
-                <button type="submit" class="btn-primary">Publish to ApexScout</button>
+                <button type="submit" class="btn-primary">Publish Profile</button>
             </form>
         </div>
     </div>
 
-    <script src="script.js?v=2.0"></script>
+    <!-- The Version number (?v=2.1) forces the browser to refresh your code -->
+    <script src="script.js?v=2.1"></script>
 </body>
 </html>
