@@ -1,5 +1,5 @@
 const SUPABASE_URL = 'https://prngglvbtvijbpxydupd.supabase.co';
-const SUPABASE_KEY = 'YOUR_KEY_HERE'; // Ensure the full key is used
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBybmdnbHZidHZpamJweHlkdXBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0OTY4MjQsImV4cCI6MjA5MzA3MjgyNH0.y0iZ00nlsiXk_aAVVlW6FZdO3yjjJrVZZVHBgfZZ5io'; // Ensure the full key is used
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_KEY = "SCOUT2026";
