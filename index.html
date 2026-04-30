@@ -3,83 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RecruitPro | Elite Scouting</title>
+    <title>ApexScout | Elite Prospect Database</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <nav class="nav-bar">
-        <div class="container nav-wrap">
-            <div class="brand">PLAYER<span>PRO</span></div>
-            <div class="controls">
-                <input type="text" id="search" placeholder="Search name/rank..." onkeyup="filter()">
-                <div id="authPanel"></div>
-                <button class="btn-add" id="addBtn" style="display:none" onclick="openEditor()">+ Add Profile</button>
+    <nav class="top-nav">
+        <div class="container nav-flex">
+            <div class="brand">APEX<span>SCOUT</span></div>
+            <div class="nav-right">
+                <input type="text" id="search" placeholder="Search athletes..." onkeyup="filter()">
+                <div id="authArea"></div>
+                <button class="btn-create" id="addBtn" style="display:none" onclick="openEditor()">+ Create Profile</button>
             </div>
         </div>
     </nav>
 
     <main class="container">
-        <div id="grid" class="player-grid"></div>
+        <div id="grid" class="profile-grid"></div>
     </main>
 
-    <!-- PLAYER EDITOR MODAL -->
-    <div id="editorModal" class="modal">
-        <div class="modal-content">
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="modal">
+        <div class="modal-card mini">
+            <h2 id="aTitle">Sign In</h2>
+            <div class="input-stack">
+                <input type="email" id="aEmail" placeholder="Email Address">
+                <input type="password" id="aPass" placeholder="Password">
+            </div>
+            <button class="btn-primary" onclick="handleAuth()">Continue</button>
+            <p id="aToggle" onclick="swapAuth()">Need an account? Sign Up</p>
+            <button class="btn-close" onclick="closeModal('authModal')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- PLAYER MODAL -->
+    <div id="playerModal" class="modal">
+        <div class="modal-card">
             <header class="modal-header">
-                <h2>Player Editor</h2>
-                <span class="close" onclick="closeModal('editorModal')">&times;</span>
+                <h3>Athlete Profile Editor</h3>
+                <span class="close-icon" onclick="closeModal('playerModal')">&times;</span>
             </header>
             <form id="playerForm">
                 <input type="hidden" id="pid">
                 
-                <div class="section-label">General Info</div>
-                <div class="row"><input id="name" placeholder="Full Name" required><input id="pos" placeholder="Position"></div>
-                <div class="row"><input id="year" placeholder="Class Year"><input id="num" placeholder="Jersey #"></div>
-                <div class="row"><input id="h" placeholder="Height"><input id="w" placeholder="Weight"><input type="number" id="age" placeholder="Age"></div>
-                
-                <div class="section-label">Season Averages</div>
-                <div class="row">
-                    <input id="avg_pts" placeholder="PTS">
-                    <input id="avg_ast" placeholder="AST">
-                    <input id="avg_reb" placeholder="REB">
-                    <input id="avg_time" placeholder="Time/Score">
+                <div class="form-grid">
+                    <div class="span-2"><label>Full Name</label><input id="name" required></div>
+                    <div><label>Position</label><input id="pos" placeholder="e.g. SG"></div>
+                    <div><label>Class Year</label><input id="year" placeholder="e.g. 2027"></div>
+                    <div><label>Jersey #</label><input id="num"></div>
+                    <div><label>Height</label><input id="h" placeholder="e.g. 6'4"></div>
+                    <div><label>Weight (LB)</label><input id="w" type="number"></div>
+                    <div><label>Age</label><input id="age" type="number"></div>
+                    <div class="span-2"><label>Location</label><input id="loc" placeholder="City, State"></div>
                 </div>
 
-                <div class="section-label">Last Game Result</div>
-                <div class="row">
-                    <input id="last_opp" placeholder="Opponent">
-                    <input id="last_score" placeholder="Game Score">
-                    <input id="last_pts" placeholder="Player Stats/Time">
+                <div class="stat-section">
+                    <label>Season Averages (Numbers Only)</label>
+                    <div class="stat-inputs">
+                        <input id="avg_pts" placeholder="PTS">
+                        <input id="avg_ast" placeholder="AST">
+                        <input id="avg_reb" placeholder="REB">
+                        <input id="avg_time" placeholder="Score/Time">
+                    </div>
                 </div>
 
-                <div class="section-label">Skill Set</div>
-                <div id="skillsContainer"></div>
-                <button type="button" class="btn-text" onclick="addSkillRow()">+ Add Skill</button>
+                <div class="skill-section">
+                    <label>Skill Ratings</label>
+                    <div id="skillsList"></div>
+                    <button type="button" class="btn-add-skill" onclick="addSkillRow()">+ Add Skill</button>
+                </div>
 
-                <div class="section-label">Ranking & Media</div>
-                <input id="rank" placeholder="State/Global Rank (e.g. #2 UT - 2027)">
-                <input id="arch" placeholder="Archetype (e.g. Glue Player)">
-                <input id="vid" placeholder="Video Link (YouTube/Veo)">
+                <div class="form-grid">
+                    <div><label>Rank</label><input id="rank"></div>
+                    <div><label>Archetype</label><input id="arch"></div>
+                    <div class="span-2"><label>Highlight Link</label><input id="vid"></div>
+                </div>
 
-                <button type="submit" class="btn-submit">Publish Profile</button>
+                <button type="submit" class="btn-primary">Publish to ApexScout</button>
             </form>
         </div>
     </div>
 
-    <!-- AUTH MODAL -->
-    <div id="authModal" class="modal">
-        <div class="modal-content mini">
-            <h2 id="atitle">Login</h2>
-            <input type="email" id="aemail" placeholder="Email">
-            <input type="password" id="apass" placeholder="Password">
-            <button class="btn-submit" onclick="handleAuth()">Continue</button>
-            <p id="aswitch" onclick="swapAuth()" style="text-align:center; cursor:pointer; font-size:0.8rem; margin-top:15px;">Need an account? Sign Up</p>
-        </div>
-    </div>
-
-    <!-- Forces refresh of cached script -->
-    <script src="script.js?v=1.5"></script>
+    <script src="script.js?v=2.0"></script>
 </body>
 </html>
