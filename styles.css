@@ -1,7 +1,7 @@
 :root {
     --cream: #f9f8f4;
     --green: #3d6b4d;
-    --light-green: #e9f5ee;
+    --light-green: #eef7f1;
     --border: #edeae3;
     --text: #1a1a1a;
 }
@@ -9,68 +9,62 @@
 body { background: var(--cream); font-family: 'Inter', sans-serif; color: var(--text); margin: 0; }
 .container { max-width: 1250px; margin: 0 auto; padding: 0 20px; }
 
-/* Scout Header */
-.scout-header { background: #fff; padding: 15px 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-.header-wrap { display: flex; justify-content: space-between; align-items: center; }
+/* Navigation */
+.nav-bar { background: #fff; border-bottom: 1px solid var(--border); padding: 15px 0; position: sticky; top: 0; z-index: 100; }
+.nav-wrap { display: flex; justify-content: space-between; align-items: center; }
 .brand { font-weight: 900; letter-spacing: 2px; font-size: 1.1rem; }
 .brand span { color: var(--green); }
-.actions { display: flex; gap: 15px; align-items: center; }
+.controls { display: flex; gap: 15px; align-items: center; }
 #search { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); outline: none; }
 
+/* Buttons */
 .btn-add { background: var(--green); color: #fff; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: 700; }
 .btn-outline { border: 1px solid var(--green); color: var(--green); background: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; }
+.btn-submit { width: 100%; background: var(--green); color: #fff; border: none; padding: 15px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+.btn-text { background: none; border: none; color: var(--green); cursor: pointer; font-weight: 700; font-size: 0.8rem; }
 
-/* Grid */
+/* The Grid */
 .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 40px; padding: 40px 0; }
 
-/* THE RECRUIT CARD */
+/* THE CARD AESTHETIC */
 .player-card {
     background: #fff; border-radius: 24px; padding: 40px; border: 1px solid var(--border);
     position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.02);
 }
 
-/* Corner Accents from image_29f63d.png */
 .player-card::before, .player-card::after { content: ''; position: absolute; width: 25px; height: 25px; border: 2px solid var(--green); }
 .player-card::before { top: 15px; left: 15px; border-right: 0; border-bottom: 0; border-top-left-radius: 10px; }
 .player-card::after { bottom: 15px; right: 15px; border-left: 0; border-top: 0; border-bottom-right-radius: 10px; }
 
-.c-top { text-align: center; margin-bottom: 30px; }
-.c-top small { color: var(--green); font-weight: 800; text-transform: uppercase; letter-spacing: 3px; font-size: 0.6rem; }
-.c-top h2 { font-size: 3.2rem; margin: 10px 0; font-weight: 900; letter-spacing: -1px; }
-.c-top p { color: #777; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.c-header { text-align: center; margin-bottom: 30px; }
+.c-header small { color: var(--green); font-weight: 800; text-transform: uppercase; letter-spacing: 3px; font-size: 0.6rem; }
+.c-header h2 { font-size: 3.2rem; margin: 10px 0; font-weight: 900; letter-spacing: -1px; }
+.c-header p { color: #777; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
 
-.dashed-section { border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border); padding: 15px 0; margin-bottom: 20px; }
+.divider { border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border); padding: 15px 0; margin-bottom: 20px; }
 .stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9rem; }
 .stat-row label { color: #888; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; }
-.stat-row b { font-weight: 800; }
 
-/* Scouting QOL Sections */
-.averages-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; margin-bottom: 20px; }
-.avg-item { background: #fbfbfb; padding: 10px; border-radius: 10px; border: 1px solid #f0f0f0; }
-.avg-item small { display: block; font-size: 0.6rem; color: #999; font-weight: 700; margin-bottom: 2px; }
-.avg-item b { font-size: 1.1rem; color: var(--green); }
-
-.game-log { background: #fafafa; padding: 15px; border-radius: 12px; margin-bottom: 25px; }
-.game-log label { font-size: 0.6rem; font-weight: 800; color: #999; text-transform: uppercase; margin-bottom: 5px; display: block; }
-.game-log p { margin: 0; font-size: 0.85rem; font-weight: 700; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.stat-box { background: #fbfbfb; padding: 10px; border-radius: 10px; border: 1px solid #f0f0f0; text-align: center; }
+.stat-box small { display: block; font-size: 0.6rem; color: #999; font-weight: 700; }
+.stat-box b { font-size: 1.1rem; color: var(--green); }
 
 .arch-pill { background: var(--light-green); padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 .arch-pill span { font-size: 0.7rem; color: #777; font-weight: 700; text-transform: uppercase; }
 .arch-pill strong { font-size: 1.5rem; color: var(--green); font-weight: 900; }
 
 .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.skill-box { border: 1px solid var(--border); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; }
-.skill-box b { font-size: 0.9rem; margin-bottom: 3px; }
-.skill-box small { color: var(--green); font-weight: 800; font-size: 0.65rem; }
+.skill-item { border: 1px solid var(--border); padding: 15px; border-radius: 12px; }
+.skill-item b { display: block; font-size: 0.9rem; margin-bottom: 3px; }
+.skill-item small { color: var(--green); font-weight: 800; font-size: 0.65rem; }
 
-.vid-btn { display: block; background: #000; color: #fff; text-align: center; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.8rem; margin-top: 20px; }
+.vid-link { display: block; background: #000; color: #fff; text-align: center; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 700; margin-top: 20px; font-size: 0.8rem; }
 
 /* Modals */
 .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; }
-.modal-content { background: #fff; max-width: 500px; margin: 40px auto; padding: 30px; border-radius: 20px; position: relative; }
+.modal-content { background: #fff; max-width: 500px; margin: 40px auto; padding: 35px; border-radius: 20px; position: relative; }
 .modal-content.mini { max-width: 350px; }
-.form-section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-.form-section label { font-weight: 800; font-size: 0.7rem; color: var(--green); text-transform: uppercase; display: block; margin-bottom: 10px; }
+.section-label { font-weight: 800; font-size: 0.7rem; color: var(--green); text-transform: uppercase; margin: 20px 0 10px 0; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .row { display: flex; gap: 10px; margin-bottom: 10px; }
-input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; }
-.btn-save { width: 100%; background: var(--green); color: #fff; border: none; padding: 15px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; }
