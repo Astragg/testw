@@ -2,53 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DM Tool (SRD Powered)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Pro | Recruiting Database</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<header>DM Tool (SRD Powered)</header>
+    <header>
+        <div class="container header-flex">
+            <div class="logo">PLAYER <span>PRO</span></div>
+            <div class="header-actions">
+                <input type="text" id="searchBar" placeholder="Search by name or position..." onkeyup="filterPlayers()">
+                <button class="btn-add" onclick="openModal()">+ Add Player</button>
+            </div>
+        </div>
+    </header>
 
-<div class="tabs">
-    <button onclick="showTab('gen')">Generator</button>
-    <button onclick="showTab('sheet')">Sheet</button>
-    <button onclick="showTab('spells')">Spells</button>
-    <button onclick="showTab('rules')">Rules</button>
-</div>
+    <main class="container">
+        <div id="playerGrid" class="player-grid">
+            <!-- Cards dynamic load here -->
+        </div>
+    </main>
 
-<div id="gen" class="tab active">
-    <div class="card">
-        <label>Name</label>
-        <input id="charName" placeholder="Hero Name">
-
-        <label>Class</label>
-        <select id="classSelect"></select>
-
-        <label>Level</label>
-        <input id="levelInput" type="number" value="1" min="1" max="20">
-
-        <button class="primary-btn" onclick="generateCharacter()">Generate Character</button>
+    <!-- Entry/Edit Modal -->
+    <div id="playerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Player</h2>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="playerForm">
+                <input type="hidden" id="playerId">
+                <div class="form-row">
+                    <input type="text" id="name" placeholder="Full Name" required>
+                    <input type="text" id="position" placeholder="Position (e.g. Guard / Wing)" required>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="classYear" placeholder="Class Year (e.g. 2027)" required>
+                    <input type="text" id="number" placeholder="Jersey #">
+                </div>
+                <div class="form-row">
+                    <input type="text" id="height" placeholder="Height (6'4&quot;)">
+                    <input type="text" id="weight" placeholder="Weight (205 LB)">
+                </div>
+                <div class="form-row">
+                    <input type="number" id="age" placeholder="Age">
+                    <input type="text" id="location" placeholder="Location (Utah, USA)">
+                </div>
+                <input type="text" id="rank" placeholder="Rank (e.g. #2 UT - 2027)">
+                <input type="text" id="archetype" placeholder="Archetype (e.g. Glue Player)">
+                
+                <label>Skill Set (Format: Name:Level, Name:Level)</label>
+                <textarea id="skillsInput" placeholder="Rebounding:Elite, Passing:Elite, Shooting:Situational"></textarea>
+                
+                <button type="submit" class="btn-submit">Save Profile</button>
+            </form>
+        </div>
     </div>
-</div>
 
-<div id="sheet" class="tab">
-    <div id="sheetOutput">
-        <p style="text-align:center; color:#666;">No character generated. Head to the Generator tab!</p>
-    </div>
-</div>
-
-<div id="spells" class="tab">
-    <label>Search Spells</label>
-    <input id="spellSearch" placeholder="Type to filter spells...">
-    <div id="spellList"></div>
-</div>
-
-<div id="rules" class="tab">
-    <label>Search Conditions</label>
-    <input id="ruleSearch" placeholder="Type to filter rules...">
-    <div id="ruleList"></div>
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
